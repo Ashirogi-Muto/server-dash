@@ -64,3 +64,7 @@ Currently, the server binds to port `3000` by default.
 - [Recharts](https://recharts.org/) (for charts)
 - [Lucide React](https://lucide.dev/) (for icons)
 - [socket.io](https://socket.io/) (for real-time updates)
+
+## License
+
+This project is licensed under the [Creative Commons Attribution 4.0 International License](LICENSE).
