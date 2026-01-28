@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    /* Tell browser to use dark defaults for scrollbars/UI */
+    color-scheme: dark;
+  }
+
+  html {
+    @apply bg-zinc-950;
+  }
+
+  body {
+    @apply bg-zinc-950 text-zinc-50 antialiased;
+    /* Firefox support */
+    scrollbar-width: thin;
+    /* Ensure Firefox track is dark */
+    scrollbar-color: rgba(63, 63, 70, 0.5) #09090b;
+  }
+
+  /* Global Scrollbar for WebKit (Chrome, Edge, Safari) */
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  *::-webkit-scrollbar-track {
+    /* Explicitly use the background color instead of transparent to avoid white bleed */
+    background: #09090b;
+    /* zinc-950 */
+  }
+
+  *::-webkit-scrollbar-thumb {
+    @apply bg-zinc-700/50 rounded-full;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    @apply bg-zinc-600;
+  }
+}
