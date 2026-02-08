@@ -1,4 +1,5 @@
 import { createServer } from "http";
+import "dotenv/config"; // Load env vars before anything else
 import { parse } from "url";
 import next from "next";
 import { Server } from "socket.io";
@@ -31,7 +32,7 @@ async function findAvailablePort(startPort: number): Promise<number> {
 
 const startServer = async () => {
     try {
-        const port = await findAvailablePort(3002);
+        const port = await findAvailablePort(3000);
         console.log(`> Found available port: ${port}`);
 
         const app = next({ dev, hostname, port });
@@ -40,8 +41,14 @@ const startServer = async () => {
         await app.prepare();
 
         const server = createServer(async (req, res) => {
+            const parsedUrl = parse(req.url!, true);
+
+            // Skip Next.js handling for Socket.IO requests
+            if (parsedUrl.pathname?.startsWith('/socket.io/')) {
+                return;
+            }
+
             try {
-                const parsedUrl = parse(req.url!, true);
                 await handle(req, res, parsedUrl);
             } catch (err) {
                 console.error("Error occurred handling", req.url, err);
@@ -86,13 +93,22 @@ const startServer = async () => {
 
             // Spawn shell
             const shell = os.platform() === 'win32' ? 'powershell.exe' : 'bash';
-            const ptyProcess = pty.spawn(shell, [], {
-                name: 'xterm-color',
-                cols: 80,
-                rows: 30,
-                cwd: process.env.HOME,
-                env: process.env as any
-            });
+            let ptyProcess: any;
+
+            try {
+                ptyProcess = pty.spawn(shell, [], {
+                    name: 'xterm-color',
+                    cols: 80,
+                    rows: 30,
+                    cwd: process.env.HOME,
+                    env: process.env as any
+                });
+            } catch (spawnErr) {
+                console.error("Failed to spawn PTY:", spawnErr);
+                socket.emit("output", "\r\n\x1b[31mFailed to spawn shell on server. Check server logs.\x1b[0m\r\n");
+                socket.disconnect();
+                return;
+            }
 
             // Pipe PTY -> Socket
             ptyProcess.onData((data) => {

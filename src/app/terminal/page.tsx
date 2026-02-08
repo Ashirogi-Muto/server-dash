@@ -1,6 +1,8 @@
-import Terminal from "@/components/terminal/Terminal";
+import NextDynamic from 'next/dynamic';
 import { Terminal as TerminalIcon } from "lucide-react";
 import { Shell } from "@/components/layout/Shell";
+
+const Terminal = NextDynamic(() => import("@/components/terminal/Terminal"), { ssr: false });
 
 // Prevent static generation - this page uses server-side terminal
 export const dynamic = 'force-dynamic';

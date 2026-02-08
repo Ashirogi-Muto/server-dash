@@ -59,7 +59,8 @@ export async function getSettings() {
 
 export async function updateSettings(partialSettings: Partial<ServerConfig['settings']>) {
     const config = await getAdminConfig();
-    config.settings = { ...config.settings, ...partialSettings };
+    const currentSettings = config.settings || { refreshRate: 3000 };
+    config.settings = { ...currentSettings, ...partialSettings };
     fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
     return config.settings;
 }

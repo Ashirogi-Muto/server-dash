@@ -55,16 +55,52 @@ export default function Terminal({ className }: TerminalProps) {
 
         const fitAddon = new FitAddon();
         term.loadAddon(fitAddon);
-
-        term.open(terminalRef.current);
-        fitAddon.fit();
         termRef.current = term;
+
+        // Safe fit function
+        const fitTerminal = () => {
+            if (!terminalRef.current || !termRef.current) return;
+            // Check if element is visible (offsetParent is null if hidden)
+            if (terminalRef.current.offsetParent === null) return;
+
+            try {
+                fitAddon.fit();
+                if (term.cols > 0 && term.rows > 0) {
+                    socket.emit("resize", { cols: term.cols, rows: term.rows });
+                }
+            } catch (e) {
+                // Suppress expected errors during initialization/hiding
+            }
+        };
+
+        // Initialize xterm only when we have dimensions
+        let isOpened = false;
+        const resizeObserver = new ResizeObserver(() => {
+            if (!terminalRef.current) return;
+
+            // Only open if we have size
+            if (!isOpened && terminalRef.current.clientWidth > 0 && terminalRef.current.clientHeight > 0) {
+                term.open(terminalRef.current);
+                isOpened = true;
+                fitTerminal();
+            } else if (isOpened) {
+                // Debounce resize
+                requestAnimationFrame(() => fitTerminal());
+            }
+        });
+
+        resizeObserver.observe(terminalRef.current);
 
         // Handle Socket Events
         socket.on("connect", () => {
             term.write("\r\n\x1b[32mConnected to server shell...\x1b[0m\r\n");
-            // Send initial resize
-            socket.emit("resize", { cols: term.cols, rows: term.rows });
+            // Only fit/resize if already opened
+            if (isOpened) fitTerminal();
+        });
+
+        socket.on("connect_error", (err) => {
+            console.error("Socket connection error:", err);
+            term.write(`\r\n\x1b[31mConnection Error: ${err.message}\x1b[0m\r\n`);
         });
 
         socket.on("output", (data) => {
@@ -80,20 +116,14 @@ export default function Terminal({ className }: TerminalProps) {
             socket.emit("input", data);
         });
 
-        // Handle Resize
-        const handleResize = () => {
-            fitAddon.fit();
-            if (term.cols && term.rows) {
-                socket.emit("resize", { cols: term.cols, rows: term.rows });
-            }
-        };
-
-        window.addEventListener("resize", handleResize);
+        // Window resize fallback
+        window.addEventListener("resize", fitTerminal);
 
         return () => {
             socket.disconnect();
             term.dispose();
-            window.removeEventListener("resize", handleResize);
+            resizeObserver.disconnect();
+            window.removeEventListener("resize", fitTerminal);
         };
     }, []);
 
