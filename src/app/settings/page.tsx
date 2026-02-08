@@ -1,134 +1,241 @@
-"use client";
+'use client';
 
-import { Shell } from "@/components/layout/Shell";
-import { PageHeader } from "@/components/layout/PageHeader";
-import { Settings, Shield, User, Lock, Server } from "lucide-react";
-import { useState } from "react";
-import clsx from "clsx";
+import { useState } from 'react';
+import { useSettings } from '@/providers/SettingsProvider';
+import { Moon, Sun, Clock, Lock, ShieldCheck, Settings } from 'lucide-react';
+import { clsx } from 'clsx';
+import { Shell } from '@/components/layout/Shell';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 export default function SettingsPage() {
+    const { theme, setTheme, refreshRate, setRefreshRate } = useSettings();
+    const [activeTab, setActiveTab] = useState<'appearance' | 'security'>('appearance');
+
     return (
         <Shell>
-            <PageHeader
-                title="Settings"
-                icon={Settings}
-            />
+            <PageHeader title="Settings" icon={Settings} />
 
-            <div className="px-6 pb-8 max-w-4xl mx-auto space-y-8">
-
-                {/* Profile Section */}
-                <SettingsSection title="Profile & Authentication" icon={User}>
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <InputGroup label="Username" defaultValue="admin" disabled />
-                            <InputGroup label="Email" defaultValue="admin@local" />
-                        </div>
-                        <div className="pt-4 border-t border-white/5">
-                            <h4 className="text-sm font-medium text-zinc-300 mb-4 flex items-center gap-2">
-                                <Lock className="h-4 w-4" /> Change Password
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <InputGroup label="Current Password" type="password" />
-                                <InputGroup label="New Password" type="password" />
-                                <InputGroup label="Confirm Password" type="password" />
-                            </div>
-                            <div className="mt-4 flex justify-end">
-                                <button className="px-4 py-2 bg-white/5 hover:bg-white/10 text-zinc-200 rounded text-sm transition-colors">
-                                    Update Password
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </SettingsSection>
-
-                {/* Server Config */}
-                <SettingsSection title="Dashboard Configuration" icon={Server}>
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between p-3 rounded bg-white/5">
-                            <div>
-                                <div className="text-sm font-medium text-zinc-200">Refresh Rate</div>
-                                <div className="text-xs text-zinc-500">Interval for polling system stats</div>
-                            </div>
-                            <select className="bg-black/20 border border-white/10 rounded text-sm px-2 py-1 text-zinc-300">
-                                <option>1 second</option>
-                                <option>2 seconds</option>
-                                <option>5 seconds</option>
-                            </select>
-                        </div>
-
-                        <div className="flex items-center justify-between p-3 rounded bg-white/5">
-                            <div>
-                                <div className="text-sm font-medium text-zinc-200">Dark Mode</div>
-                                <div className="text-xs text-zinc-500">Force dark theme (Recommended)</div>
-                            </div>
-                            <ToggleSwitch defaultChecked />
-                        </div>
-                    </div>
-                </SettingsSection>
-
-                {/* Danger Zone */}
-                <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-6">
-                    <h3 className="text-red-400 font-medium flex items-center gap-2 mb-4">
-                        <Shield className="h-4 w-4" /> Danger Zone
-                    </h3>
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <div className="text-sm text-zinc-300">Factory Reset Dashboard</div>
-                            <div className="text-xs text-zinc-500">Resets all dashboard preferences to default</div>
-                        </div>
-                        <button className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded text-sm transition-colors">
-                            Reset Defaults
+            <div className="p-6 max-w-5xl mx-auto">
+                <div className="flex flex-col md:flex-row gap-6">
+                    {/* Sidebar Navigation */}
+                    <div className="w-full md:w-64 flex flex-col gap-2">
+                        <button
+                            onClick={() => setActiveTab('appearance')}
+                            className={clsx(
+                                "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
+                                activeTab === 'appearance'
+                                    ? "bg-blue-600/10 text-blue-400 border border-blue-600/20"
+                                    : "text-zinc-400 hover:bg-white/5 hover:text-white"
+                            )}
+                        >
+                            <Sun className="h-4 w-4" />
+                            Appearance & System
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('security')}
+                            className={clsx(
+                                "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
+                                activeTab === 'security'
+                                    ? "bg-blue-600/10 text-blue-400 border border-blue-600/20"
+                                    : "text-zinc-400 hover:bg-white/5 hover:text-white"
+                            )}
+                        >
+                            <ShieldCheck className="h-4 w-4" />
+                            Security
                         </button>
                     </div>
-                </div>
 
+                    {/* Content Area */}
+                    <div className="flex-1 bg-gray-900 border border-gray-800 rounded-xl p-6 min-h-[400px]">
+                        {activeTab === 'appearance' && (
+                            <div className="space-y-8">
+                                {/* Theme Section */}
+                                <div>
+                                    <h2 className="text-xl font-semibold mb-4 text-white flex items-center gap-2">
+                                        <Moon className="h-5 w-5 text-zinc-400" />
+                                        Theme Preference
+                                    </h2>
+                                    <div className="grid grid-cols-2 gap-4 max-w-sm">
+                                        <button
+                                            onClick={() => setTheme('dark')}
+                                            className={clsx(
+                                                "flex flex-col items-center gap-2 p-4 rounded-lg border transition-all",
+                                                theme === 'dark'
+                                                    ? "bg-zinc-950 border-blue-500 ring-1 ring-blue-500"
+                                                    : "bg-zinc-950/50 border-zinc-800 hover:border-zinc-700"
+                                            )}
+                                        >
+                                            <div className="h-8 w-8 rounded-full bg-zinc-800 border border-zinc-700" />
+                                            <span className="text-sm font-medium text-zinc-300">Dark Mode</span>
+                                        </button>
+                                        <button
+                                            onClick={() => setTheme('light')}
+                                            className={clsx(
+                                                "flex flex-col items-center gap-2 p-4 rounded-lg border transition-all",
+                                                theme === 'light'
+                                                    ? "bg-white border-blue-500 ring-1 ring-blue-500"
+                                                    : "bg-white/5 border-zinc-800 hover:border-zinc-700"
+                                            )}
+                                        >
+                                            <div className="h-8 w-8 rounded-full bg-zinc-200 border border-zinc-300" />
+                                            <span className="text-sm font-medium text-zinc-300">Light Mode</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="h-px bg-zinc-800" />
+
+                                {/* Refresh Rate Section */}
+                                <div>
+                                    <h2 className="text-xl font-semibold mb-4 text-white flex items-center gap-2">
+                                        <Clock className="h-5 w-5 text-zinc-400" />
+                                        Dashboard Refresh Rate
+                                    </h2>
+                                    <p className="text-sm text-zinc-400 mb-4">
+                                        Control how often the system metrics are updated. Lower values provide more real-time data but consume more resources.
+                                    </p>
+
+                                    <div className="space-y-4 max-w-md">
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-zinc-400">Update Interval</span>
+                                            <span className="text-blue-400 font-mono font-bold">{refreshRate / 1000}s</span>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min="1000"
+                                            max="10000"
+                                            step="1000"
+                                            value={refreshRate}
+                                            onChange={(e) => setRefreshRate(parseInt(e.target.value))}
+                                            className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                                        />
+                                        <div className="flex justify-between text-xs text-zinc-500">
+                                            <span>1s (Fast)</span>
+                                            <span>5s (Normal)</span>
+                                            <span>10s (Slow)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'security' && <ChangePasswordForm />}
+                    </div>
+                </div>
             </div>
         </Shell>
     );
 }
 
-function SettingsSection({ title, icon: Icon, children }: { title: string, icon: any, children: React.ReactNode }) {
-    return (
-        <div className="rounded-lg border border-white/10 bg-zinc-900/50 p-6 backdrop-blur-sm">
-            <h3 className="text-lg font-medium text-zinc-200 mb-6 flex items-center gap-2">
-                <Icon className="h-5 w-5 text-zinc-400" />
-                {title}
-            </h3>
-            {children}
-        </div>
-    );
-}
+function ChangePasswordForm() {
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [message, setMessage] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
-function InputGroup({ label, type = "text", defaultValue, disabled }: { label: string, type?: string, defaultValue?: string, disabled?: boolean }) {
-    return (
-        <div className="space-y-1.5">
-            <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">{label}</label>
-            <input
-                type={type}
-                defaultValue={defaultValue}
-                disabled={disabled}
-                className="w-full rounded bg-black/20 border border-white/10 px-3 py-2 text-sm text-zinc-300 focus:outline-none focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            />
-        </div>
-    );
-}
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setMessage('');
+        setError('');
 
-function ToggleSwitch({ defaultChecked }: { defaultChecked?: boolean }) {
-    const [checked, setChecked] = useState(defaultChecked);
+        if (newPassword !== confirmPassword) {
+            setError('New passwords do not match');
+            return;
+        }
+
+        if (newPassword.length < 4) {
+            setError('New password must be at least 4 characters');
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const res = await fetch('/api/auth/change-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ currentPassword, newPassword }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                setMessage('Password updated successfully');
+                setCurrentPassword('');
+                setNewPassword('');
+                setConfirmPassword('');
+            } else {
+                setError(data.error || 'Failed to update password');
+            }
+        } catch (err) {
+            setError('An error occurred');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
-        <button
-            onClick={() => setChecked(!checked)}
-            className={clsx(
-                "relative h-6 w-11 rounded-full transition-colors focus:outline-none",
-                checked ? "bg-emerald-600" : "bg-zinc-700"
-            )}
-        >
-            <span
-                className={clsx(
-                    "absolute top-1 left-1 h-4 w-4 rounded-full bg-white transition-transform",
-                    checked ? "translate-x-5" : "translate-x-0"
+        <div>
+            <h2 className="text-xl font-semibold mb-6 text-white flex items-center gap-2">
+                <Lock className="h-5 w-5 text-zinc-400" />
+                Change Password
+            </h2>
+
+            <form onSubmit={handleSubmit} className="max-w-md">
+                {message && (
+                    <div className="bg-green-500/10 border border-green-500/20 text-green-500 p-3 rounded mb-4 text-sm">
+                        {message}
+                    </div>
                 )}
-            />
-        </button>
+
+                {error && (
+                    <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded mb-4 text-sm">
+                        {error}
+                    </div>
+                )}
+
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">Current Password</label>
+                        <input
+                            type="password"
+                            value={currentPassword}
+                            onChange={(e) => setCurrentPassword(e.target.value)}
+                            className="w-full p-2 rounded bg-gray-950 border border-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-white transition-all"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">New Password</label>
+                        <input
+                            type="password"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            className="w-full p-2 rounded bg-gray-950 border border-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-white transition-all"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">Confirm New Password</label>
+                        <input
+                            type="password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            className="w-full p-2 rounded bg-gray-950 border border-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-white transition-all"
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="mt-4 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-4 py-2 rounded font-medium transition-colors w-full"
+                    >
+                        {loading ? 'Updating...' : 'Update Password'}
+                    </button>
+                </div>
+            </form>
+        </div>
     );
 }

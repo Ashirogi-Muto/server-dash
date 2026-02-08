@@ -13,7 +13,10 @@ interface SystemInfoData {
     loadAvg: number[];
 }
 
+import { useSettings } from "@/providers/SettingsProvider";
+
 export function SystemInfo() {
+    const { refreshRate } = useSettings();
     const [info, setInfo] = useState<SystemInfoData | null>(null);
 
     useEffect(() => {
@@ -30,9 +33,9 @@ export function SystemInfo() {
         };
 
         fetchInfo();
-        const interval = setInterval(fetchInfo, 5000); // Poll every 5s
+        const interval = setInterval(fetchInfo, refreshRate); // Use context rate
         return () => clearInterval(interval);
-    }, []);
+    }, [refreshRate]);
 
     // Skeleton loading state
     if (!info) {

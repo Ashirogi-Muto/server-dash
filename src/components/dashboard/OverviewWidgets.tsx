@@ -45,9 +45,10 @@ interface SystemStats {
     };
 }
 
-const POLL_INTERVAL = 2000;
+import { useSettings } from "@/providers/SettingsProvider";
 
 export function OverviewWidgets() {
+    const { refreshRate } = useSettings();
     const [stats, setStats] = useState<SystemStats | null>(null);
     const [loading, setLoading] = useState(true);
     const [rates, setRates] = useState({ rx: 0, tx: 0 });
@@ -93,9 +94,9 @@ export function OverviewWidgets() {
         };
 
         fetchStats();
-        const interval = setInterval(fetchStats, POLL_INTERVAL);
+        const interval = setInterval(fetchStats, refreshRate);
         return () => clearInterval(interval);
-    }, []);
+    }, [refreshRate]);
 
     if (loading || !stats) {
         return (

@@ -22,17 +22,21 @@ export const metadata: Metadata = {
   },
 };
 
+import { SettingsProvider } from "@/providers/SettingsProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <body
         className={`${inter.variable} ${mono.variable} font-sans antialiased bg-zinc-950 text-zinc-50`}
       >
-        {children}
+        <SettingsProvider>
+          {children}
+        </SettingsProvider>
       </body>
     </html>
   );
