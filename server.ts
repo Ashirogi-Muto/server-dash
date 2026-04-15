@@ -111,12 +111,12 @@ const startServer = async () => {
             }
 
             // Pipe PTY -> Socket
-            ptyProcess.onData((data) => {
+            ptyProcess.onData((data: string) => {
                 socket.emit("output", data);
             });
 
             // Pipe Socket -> PTY
-            socket.on("input", (data) => {
+            socket.on("input", (data: string) => {
                 ptyProcess.write(data);
             });
 

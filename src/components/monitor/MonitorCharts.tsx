@@ -12,7 +12,7 @@ import {
     Area
 } from "recharts";
 import { clsx } from 'clsx';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const MAX_HISTORY = 60;
 
@@ -26,6 +26,7 @@ interface ChartDataPoint {
 
 export function MonitorCharts() {
     const [data, setData] = useState<ChartDataPoint[]>([]);
+    const lastNetwork = useRef<{ rx: number, tx: number, time: number } | null>(null);
 
     useEffect(() => {
         // Fill initial buffer with empty points to maintain chart width
@@ -50,12 +51,29 @@ export function MonitorCharts() {
                     const now = new Date();
                     const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
+                    let rxRate = 0;
+                    let txRate = 0;
+                    
+                    if (lastNetwork.current) {
+                        const dt = (now.getTime() - lastNetwork.current.time) / 1000;
+                        if (dt > 0) {
+                            rxRate = Math.max(0, (sys.network.rx_bytes - lastNetwork.current.rx) / 1024 / dt);
+                            txRate = Math.max(0, (sys.network.tx_bytes - lastNetwork.current.tx) / 1024 / dt);
+                        }
+                    }
+                    
+                    lastNetwork.current = {
+                        rx: sys.network.rx_bytes,
+                        tx: sys.network.tx_bytes,
+                        time: now.getTime()
+                    };
+
                     const newPoint = {
                         time: timeStr,
                         cpu: sys.cpu.usagePercent,
                         memory: sys.mem.usedPercent,
-                        networkIn: sys.network.rx_bytes / 1024, // KB
-                        networkOut: sys.network.tx_bytes / 1024 // KB
+                        networkIn: rxRate,
+                        networkOut: txRate
                     };
 
                     const next = [...prev, newPoint];
